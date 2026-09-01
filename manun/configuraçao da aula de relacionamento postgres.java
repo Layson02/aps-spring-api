@@ -1,0 +1,257 @@
+/****** string de conexao *********/
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url=jdbc:postgresql://localhost:5432/relacionamento
+spring.datasource.username=postgres
+spring.datasource.password= senha do banco
+
+/************************************/
+
+/**********enum OrderStatus**********/
+public enum OrderStatus {
+
+    WAITING_PAYMENT,
+    PAID,
+    SHIPPED,
+    DELIVERED,
+    CANCELED;
+}
+/**********************************/
+/***************Order**************/
+@Entity
+@Table (name = "tb_order")
+public class Order {
+	
+    @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private Instant moment;
+    
+	@Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+	private OrderStatus status;
+	
+		
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "client_id", nullable = false)
+//    private User client;
+//
+//    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+//    private Payment payment;
+
+//    @OneToMany(mappedBy = "id.order")
+//    private Set<OrderItem> items = new HashSet<>();
+
+}
+/************************************/
+/*************User*****************/
+@Entity
+@Table(name = "tb_user")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    @Column(unique = true)
+    private String email;
+    private String phone;
+    private LocalDate birthDate;
+    private String password;
+
+    //@OneToMany(mappedBy = "client")
+    //private List<Order> orders = new ArrayList<>();
+
+}
+/******************************/
+/****V01__Create_User_Table.sql**/
+CREATE TABLE tb_user (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    birth_date DATE,
+    password VARCHAR(255) NOT NULL
+);
+/***********************************/
+/******V02__Create_Order_Table.sql***/
+CREATE TABLE tb_order (
+    id BIGSERIAL PRIMARY KEY,
+    moment TIMESTAMPTZ NOT NULL,
+    status INT NOT NULL,
+    client_id BIGINT NOT NULL,
+    CONSTRAINT fk_order_client FOREIGN KEY (client_id) REFERENCES tb_user(id)
+);
+/***********************************/
+
+/**************Payment***************/
+
+@Entity
+@Table(name = "tb_payment")
+public class Payment {
+    @Id                                                            
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+    private Instant moment;
+
+    @OneToOne
+    @MapsId
+    private Order order;
+}
+/***************************************/
+/******V03__Create_Payment_Table.sql***/
+CREATE TABLE tb_payment (
+    id BIGINT PRIMARY KEY,
+    moment TIMESTAMPTZ NOT NULL,
+    order_id BIGINT UNIQUE NOT NULL,
+    CONSTRAINT fk_payment_order FOREIGN KEY (order_id) REFERENCES tb_order(id)
+);
+
+/********************************************/
+/****** adicionar em ORDER****/
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    private Payment payment;
+
+/**** V04__Alter_Order_Add_Payment.sql ****/
+
+ALTER TABLE tb_order
+ADD COLUMN payment_id BIGINT;
+
+ALTER TABLE tb_order
+ADD CONSTRAINT fk_order_payment
+FOREIGN KEY (payment_id) REFERENCES tb_payment(id);
+/******************************/
+
+/**********Product**********/
+
+import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
+@Entity
+@Table(name = "tb_product")
+public class Product {
+	
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+	private String name;
+    
+	@Column(columnDefinition = "TEXT")
+    private String description;
+    
+	private Double price;
+    private String imgUrl;
+    
+	@ManyToMany
+    @JoinTable(name = "tb_product_category",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private Set<Category> categories = new HashSet<>();
+    
+	}
+	
+/*********************************/
+
+/************Category************/
+
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;	
+@Entity
+@Table(name = "tb_category")
+public class Category {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    @ManyToMany(mappedBy = "categories")
+    private Set<Product> products = new HashSet<>();
+
+}
+/******************************/
+
+/*********V5__Create_Category_Table.sql****/
+CREATE TABLE tb_category (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+/******************************************/
+/*******V6__Create_Product_Table.sql*******/
+CREATE TABLE tb_product (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DOUBLE PRECISION NOT NULL,
+    img_url VARCHAR(255)
+);
+/****************************************/
+/*****V7__Creat_Product_Category_Table.sql****/
+CREATE TABLE tb_product_category (
+    product_id BIGINT NOT NULL,
+    category_id BIGINT NOT NULL,
+    PRIMARY KEY (product_id, category_id),
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES tb_product(id),
+    CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES tb_category(id)
+);
+/***********************************/
+/*************OrderItem**********/
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+@Entity
+@Table(name = "tb_order_item")
+public class OrderItem {
+    @EmbeddedId
+    private OrderItemPK id = new OrderItemPK();
+    private Integer quantity;
+    private Double price;
+	
+}
+/**********************************/
+
+/******OrderItemPK********/
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+@Embeddable
+public class OrderItemPK {
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+}
+/********************************/
+/*****V8__Creat_Order_Item_Table.sql****/
+CREATE TABLE tb_order_item (
+    order_id BIGINT NOT NULL, -- FK para tb_order
+    product_id BIGINT NOT NULL, -- FK para tb_product
+    quantity INT,
+    price DOUBLE PRECISION,
+    PRIMARY KEY (order_id, product_id),
+    CONSTRAINT fk_order_item_order FOREIGN KEY (order_id) REFERENCES tb_order(id),
+    CONSTRAINT fk_order_item_product FOREIGN KEY (product_id) REFERENCES tb_product(id)
+);
+
+
+
+/**************************************/
+/**********Inserir na Classe Produto***/
+@OneToMany(mappedBy = "id.product")
+    private Set<OrderItem> items = new HashSet<>();
+	
+/**************************************/
+/********Inserir na Classe Order*****/
+@OneToMany(mappedBy = "id.order")
+    private Set<OrderItem> items = new HashSet<>();
+
+/**************************************/
+
+
