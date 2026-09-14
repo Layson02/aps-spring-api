@@ -1,6 +1,7 @@
 package entities;
 
-public enum OrderStaus {
+public enum OrderStatus {
+
     WAITING_PAYMENT,
     PAID,
     SHIPPED,
