@@ -2,8 +2,10 @@ package com.relacionamento.relacionamento;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
+@EntityScan(basePackages = "entities")
 public class RelacionamentoApplication {
 
 	public static void main(String[] args) {
