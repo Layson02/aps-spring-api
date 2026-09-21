@@ -3,6 +3,7 @@ package entities;
 import java.time.Instant;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.OneToOne;
 
 @Entity
 @Table (name = "tb_order")	
@@ -33,9 +35,9 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
     private User client;
-//
-//    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
-//    private Payment payment;
+    
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    private Payment payment;
 
 //    @OneToMany(mappedBy = "id.order")
 //    private Set<OrderItem> items = new HashSet<>();
