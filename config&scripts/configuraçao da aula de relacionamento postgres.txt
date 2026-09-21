@@ -167,13 +167,13 @@ public class Category {
 }
 /******************************/
 
-/*********V5__Create_Category_Table.sql****/
+/*********V05__Create_Category_Table.sql****/
 CREATE TABLE tb_category (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL
 );
 /******************************************/
-/*******V6__Create_Product_Table.sql*******/
+/*******V06__Create_Product_Table.sql*******/
 CREATE TABLE tb_product (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -182,7 +182,7 @@ CREATE TABLE tb_product (
     img_url VARCHAR(255)
 );
 /****************************************/
-/*****V7__Creat_Product_Category_Table.sql****/
+/*****V07__Create_Product_Category_Table.sql****/
 CREATE TABLE tb_product_category (
     product_id BIGINT NOT NULL,
     category_id BIGINT NOT NULL,
