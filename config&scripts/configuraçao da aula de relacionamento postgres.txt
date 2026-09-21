@@ -222,7 +222,7 @@ public class OrderItemPK {
 
 }
 /********************************/
-/*****V8__Creat_Order_Item_Table.sql****/
+/*****V08__Create_Order_Item_Table.sql****/
 CREATE TABLE tb_order_item (
     order_id BIGINT NOT NULL, -- FK para tb_order
     product_id BIGINT NOT NULL, -- FK para tb_product
